@@ -1,5 +1,4 @@
-from typing import List, Tuple
-from flask import Flask, jsonify, request, render_template, flash
+from flask import Flask, request, render_template, flash
 from config import ApplicationConfig
 from tempfile import TemporaryDirectory
 import uuid

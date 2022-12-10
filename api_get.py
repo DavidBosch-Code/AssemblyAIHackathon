@@ -10,7 +10,7 @@ from config import API_KEY
 from config import ASSEMBLY_UPLOAD_ENDPOINT
 from config import ASSEMBLY_TRANSCRIPT_ENDPOINT
 
-from sentence_transformers import SentenceTransformer, util
+from sentence_transformers import SentenceTransformer
 
 
 MAX_AWAIT_SECONDS = 300  # We wait 300 seconds max
