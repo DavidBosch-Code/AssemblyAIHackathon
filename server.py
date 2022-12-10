@@ -1,9 +1,13 @@
 from flask import Flask, request, render_template, flash
 from config import ApplicationConfig
 from tempfile import TemporaryDirectory
+from typing import Mapping, Any
 import uuid
+import json
+import csv
 import os
 from sentence_transformers import SentenceTransformer, util
+from config import CSV_CACHE, CACHE_FOLDER
 
 
 import api_get
@@ -40,6 +44,35 @@ def get_yt_transcription(video_url: str):
     return transcript
 
 
+def check_local_cache(link: str) -> Mapping[str, Any] | None:
+    fn = None
+    with open(CSV_CACHE, 'r') as f:
+        csvreader = csv.reader(f)
+        for row in csvreader:
+            if row[0] == link:
+                fn = row[1]
+                break
+    if not fn: return None
+
+    with open(fn, 'r') as f:
+        transcript = json.load(f)
+    
+    return transcript
+
+
+def update_local_cache(link: str, transcript: Mapping[str, Any]):
+    local_fn = generate_local_fn(type='json')
+    
+    fn = os.path.join(CACHE_FOLDER, local_fn)
+
+    with open(fn, 'w') as f:
+        json.dump(transcript, f)
+
+    with open(CSV_CACHE, 'a') as f:
+        csvwriter = csv.writer(f)
+        csvwriter.writerow([link, fn])
+
+
 @app.route("/", methods=["GET", "POST"])
 def mainpage():
 
@@ -48,7 +81,15 @@ def mainpage():
         if not link:
             flash("Link cannot be empty")
             return
-        transcript = get_yt_transcription(link)
+        
+        transcript = check_local_cache(link)
+        transcript_in_cache = True if transcript else False
+    
+        if not transcript_in_cache:
+            transcript = get_yt_transcription(link)
+        else:
+            print('loaded from cache!')
+    
         transcript_text = transcript['text']
         auto_highlights = transcript['auto_highlights_result']['results']
 
@@ -60,6 +101,9 @@ def mainpage():
             "links": links
         }
         print(graph_data)
+
+        if not transcript_in_cache:
+            update_local_cache(link, transcript)
 
         return render_template(
             "homepage.html",

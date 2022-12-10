@@ -63,7 +63,8 @@ def submit_transcription_file(upload_url: str) -> str:
     # TODO: Add option to get sentiment analysis & key words/phrases
     json = {
         "audio_url": upload_url,
-        "auto_highlights": True
+        "auto_highlights": True,
+        "sentiment_analysis": True
     }
 
     headers = {
