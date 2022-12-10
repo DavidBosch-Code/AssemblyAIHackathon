@@ -7,16 +7,22 @@ import youtube_dl
 import requests
 import time
 
-from config import API_KEY
+from config import OPENAI_API_KEY
+from config import ASSEMBLY_API_KEY
 from config import ASSEMBLY_UPLOAD_ENDPOINT
 from config import ASSEMBLY_TRANSCRIPT_ENDPOINT
 
 from sentence_transformers import SentenceTransformer
 import numpy as np
+from openai.openai_response import OpenAIResponse
+import openai
 
+
+openai.api_key = OPENAI_API_KEY
 
 MAX_AWAIT_SECONDS = 300  # We wait 300 seconds max
 SLEEP_TIME = 5
+OPENAI_MODEL = 'text-curie-001'
 
 Node = List[Dict[str, str | int]]
 Links = List[Dict[str, str | int]]
@@ -49,7 +55,7 @@ def upload_file_to_assemblyai(fn: str, chunk_size: int = 5242880) -> str:
                 yield data
 
     headers = {
-        'authorization': API_KEY
+        'authorization': ASSEMBLY_API_KEY
     }
     response = requests.post(ASSEMBLY_UPLOAD_ENDPOINT,
                              headers=headers,
@@ -71,7 +77,7 @@ def submit_transcription_file(upload_url: str) -> str:
     }
 
     headers = {
-        "authorization": API_KEY,
+        "authorization": ASSEMBLY_API_KEY,
         "content-type": "application/json"
     }
 
@@ -92,7 +98,7 @@ def await_transcription(transcript_id: str) -> Mapping[str, Any]:
     print(endpoint)
 
     headers = {
-        "authorization": API_KEY,
+        "authorization": ASSEMBLY_API_KEY,
     }
 
     start_time = time.time()
@@ -149,10 +155,10 @@ def _resolve_sentiments(sentiments: List[List[Tuple[str, float]]]) -> List[Tuple
 def process_highlights(
     model: SentenceTransformer,
     similarity_metric: Callable,
-    highlights: List,
-    sentiments: List,
+    highlights: List[Mapping[str, Any]],
+    sentiments: List[Mapping[str, Any]],
     threshold:float = 0.25
-) -> Tuple[str, Dict]:
+) -> Tuple[List[str], Dict]:
 
     nodes = {}
     links = {}
@@ -217,4 +223,38 @@ def process_highlights(
             "nodes": nodes[speaker],
             "links": links[speaker]
         }
-    return "\n".join(conversation), return_dict
+
+    return conversation, return_dict
+
+
+def openai_summary(conversation: List[str]) -> str:
+    task = "Summarize the following conversation into a few sentences:\n\n"
+    prompt = task + '\n'.join(conversation)
+
+    response = openai_request(prompt)
+
+    return response.choices[0].text
+
+
+def openai_conclusions(conversation: List[str]) -> str:
+    task = "Provide the top three takeaways from the following conversation:\n\n"
+    prompt = task + '\n'.join(conversation)
+
+    response = openai_request(prompt)
+
+    return response.choices[0].text
+
+
+def openai_request(prompt: str) -> OpenAIResponse:
+    print(prompt)
+
+    response = openai.Completion.create(
+        model=OPENAI_MODEL,
+        prompt=prompt,
+        temperature=0.7,
+        max_tokens=512,
+    )
+
+    print(response)
+
+    return response

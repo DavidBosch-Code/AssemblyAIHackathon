@@ -99,7 +99,7 @@ def mainpage():
         auto_highlights = transcript['auto_highlights_result']['results']
         sentiments = transcript['sentiment_analysis_results']
 
-        transcript_text, graph_data = api_get.process_highlights(
+        conversation, graph_data = api_get.process_highlights(
             model,
             util.cos_sim,
             auto_highlights,
@@ -108,13 +108,19 @@ def mainpage():
 
         if not transcript_in_cache:
             update_local_cache(link, transcript)
+        
+        # Would make sense to cache this in the future as well
+        transcript_summary = api_get.openai_summary(conversation)
+        transcript_conclusions = api_get.openai_conclusions(conversation)
 
         return render_template(
             "homepage.html",
             link=link,
-            text=transcript_text,
+            text=conversation,
             auto_highlights=auto_highlights,
             graph_data=graph_data,
+            summary=transcript_summary,
+            conclusions=transcript_conclusions,
         )
     else:
         return render_template('homepage.html')

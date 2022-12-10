@@ -33,12 +33,15 @@
     <h5>Link: {{ link }}</h5>
     {% endif %}
     {% if text is defined %}
-    <p>Text: {{ text }}</p>
-    {% endif %}
-    {% if auto_highlights is defined %}
-    {% for autohighlight in auto_highlights %}
-    <p>Count: {{ autohighlight["count"] }}, Rank: {{ autohighlight["rank"] }}, Text: {{ autohighlight["text"] }}</p>
+    {% for t in text %}
+        <p>{{ t }}</p>
     {% endfor %}
+    {% endif %}
+    {% if summary is defined %}
+    <h5>Conversation summary: {{ summary }}</h5>
+    {% endif %}
+    {% if conclusions is defined %}
+    <h5>Conversation takeaways: {{ conclusions }}</h5>
     {% endif %}
 
     {%if graph_data is defined%}
