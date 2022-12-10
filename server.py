@@ -52,17 +52,18 @@ def check_local_cache(link: str) -> Mapping[str, Any] | None:
             if row[0] == link:
                 fn = row[1]
                 break
-    if not fn: return None
+    if not fn:
+        return None
 
     with open(fn, 'r') as f:
         transcript = json.load(f)
-    
+
     return transcript
 
 
 def update_local_cache(link: str, transcript: Mapping[str, Any]):
     local_fn = generate_local_fn(type='json')
-    
+
     fn = os.path.join(CACHE_FOLDER, local_fn)
 
     with open(fn, 'w') as f:
@@ -81,20 +82,25 @@ def mainpage():
         if not link:
             flash("Link cannot be empty")
             return
-        
+
         transcript = check_local_cache(link)
         transcript_in_cache = True if transcript else False
-    
+
         if not transcript_in_cache:
             transcript = get_yt_transcription(link)
         else:
             print('loaded from cache!')
-    
+
         transcript_text = transcript['text']
         auto_highlights = transcript['auto_highlights_result']['results']
+        sentiments = transcript['sentiment_analysis_results']
 
         nodes, links = api_get.process_highlights(
-            model, util.cos_sim, auto_highlights)
+            model,
+            util.cos_sim,
+            auto_highlights,
+            sentiments,
+        )
 
         graph_data = {
             "nodes": nodes,

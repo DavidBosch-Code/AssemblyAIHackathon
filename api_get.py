@@ -1,6 +1,7 @@
 from typing import Mapping
-from typing import Any, List, Dict, Tuple, Callable, Union
+from typing import Any, List, Dict, Tuple, Callable
 
+import numpy as np
 import urllib.parse
 import youtube_dl
 import requests
@@ -118,17 +119,29 @@ def await_transcription(transcript_id: str) -> Mapping[str, Any]:
 def process_highlights(
     model: SentenceTransformer,
     similarity_metric: Callable,
-    highlights: List
+    highlights: List,
+    sentiments: List
 ) -> Tuple[Node, Links]:
 
     nodes = []
     links = []
 
     topics = [highlight["text"] for highlight in highlights]
+    sentences = [sentence["text"] for sentence in sentiments]
 
-    embedded_topics = model.encode(topics, convert_to_tensor=True)
-    similarity_score = similarity_metric(
-        embedded_topics, embedded_topics).numpy()
+    cooccurrence_matrix = np.zeros((len(topics), len(topics)))
+    for sentence in sentences:
+        sentence_list = []
+        for idx, topic in enumerate(topics):
+            if topic in sentence:
+                sentence_list.append(idx)
+
+        for i in sentence_list:
+            for j in sentence_list[i+1:]:
+                cooccurrence_matrix[i][j] += 1
+                cooccurrence_matrix[j][i] += 1
+
+    print(cooccurrence_matrix)
 
     for i, topic in enumerate(topics):
 
@@ -144,7 +157,7 @@ def process_highlights(
             links.append({
                 "source": i,
                 "target": j,
-                "value": highlights[i]["rank"] * highlights[j]["rank"] * similarity_score[i, j] * 100
+                "value": highlights[i]["rank"] * highlights[j]["rank"] * cooccurrence_matrix[i, j] * 100
             })
 
     return nodes, links
