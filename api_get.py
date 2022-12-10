@@ -1,6 +1,7 @@
 from typing import Mapping
-from typing import Any, List, Dict, Tuple, Callable, Union
+from typing import Any, List, Dict, Tuple, Callable
 
+import numpy as np
 import urllib.parse
 import youtube_dl
 import requests
@@ -138,29 +139,40 @@ def process_highlights(
     model: SentenceTransformer,
     similarity_metric: Callable,
     highlights: List,
-    sentiment_analysis_results: List = None
+    sentiments: List,
 ) -> Tuple[Node, Links]:
 
     nodes = []
     links = []
 
     topics = [highlight["text"] for highlight in highlights]
+    sentences = [sentence["text"] for sentence in sentiments]
 
-    embedded_topics = model.encode(topics, convert_to_tensor=True)
-    similarity_score = similarity_metric(
-        embedded_topics, embedded_topics).numpy()
+    cooccurrence_matrix = np.zeros((len(topics), len(topics)))
+    for sentence in sentences:
+        sentence_list = []
+        for idx, topic in enumerate(topics):
+            if topic in sentence:
+                sentence_list.append(idx)
 
-    if sentiment_analysis_results:
-        sentiments = []
-        for i, topic in enumerate(topics):
-            sentiments.append([])
-            for sent in sentiment_analysis_results:
-                if topic in sent["text"]:
-                    sentiments[i].append(
-                        (sent["sentiment"], sent["confidence"]))
+        for i in sentence_list:
+            for j in sentence_list[i+1:]:
+                cooccurrence_matrix[i][j] += 1
+                cooccurrence_matrix[j][i] += 1
 
-        sentiments = resolve_sentiments(sentiments)
-        print(sentiments)
+    print(cooccurrence_matrix)
+
+    sentiments_list = []
+    for i, topic in enumerate(topics):
+        sentiments_list.append([])
+        for sentiment in sentiments:
+            if topic in sentiment["text"]:
+                sentiments_list[i].append(
+                    (sentiment["sentiment"], sentiment["confidence"])
+                )
+
+    sentiments_list = resolve_sentiments(sentiments_list)
+    print(sentiments_list)
 
     for i, topic in enumerate(topics):
 
@@ -169,9 +181,8 @@ def process_highlights(
             "count": highlights[i]["count"]
         }
 
-        if sentiment_analysis_results:
-            node_dict["sentiment"] = sentiments[i][0]
-            node_dict["confidence"] = sentiments[i][1]
+        node_dict["sentiment"] = sentiments_list[i][0]
+        node_dict["confidence"] = sentiments_list[i][1]
 
         nodes.append(node_dict)
 
@@ -181,7 +192,7 @@ def process_highlights(
             links.append({
                 "source": i,
                 "target": j,
-                "value": highlights[i]["rank"] * highlights[j]["rank"] * similarity_score[i, j] * 100
+                "value": highlights[i]["rank"] * highlights[j]["rank"] * cooccurrence_matrix[i, j] * 100
             })
 
     return nodes, links
