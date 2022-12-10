@@ -12,4 +12,9 @@ class ApplicationConfig():
 
 headers = { } # place hearders for assembly AI here
 
-mainUrl = "" #mainUrl for API calls
+ASSEMBLY_URL = "https://api.assemblyai.com/v2/"
+
+ASSEMBLY_UPLOAD_ENDPOINT = ASSEMBLY_URL + 'upload'
+ASSEMBLY_TRANSCRIPT_ENDPOINT = ASSEMBLY_URL + 'transcript'
+
+API_KEY = os.environ["API_KEY"]

@@ -20,7 +20,15 @@
         <button type="submit"> Submit </button>
     </form>
     {% if link is defined %}
-        <h5>Link:{{link}}</h5>
+        <h5>Link: {{ link }}</h5>
+    {% endif %}
+    {% if text is defined %}
+        <h5>Text: {{ text }}</h5>
+    {% endif %}
+    {% if auto_highlights is defined %}
+        {% for autohighlight in auto_highlights %}
+            <p>Count: {{ autohighlight["count"] }}, Rank: {{ autohighlight["rank"] }}, Text: {{ autohighlight["text"] }}</p>
+        {% endfor %}
     {% endif %}
 </body>
 
