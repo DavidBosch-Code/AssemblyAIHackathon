@@ -5,3 +5,4 @@ requests
 youtube-dl
 sentence-transformers
 numpy
+openai
