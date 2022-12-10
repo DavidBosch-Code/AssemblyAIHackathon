@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <h1>Welcome to the Audio to Topic Model</h1>
+
+    <h2>Give a youtube link which you want visualized</h2>
+    <form method="post">
+        <label for="link">Link:</label>
+        <input type="text" name="link" placeholder="Give a link" value="{{request.form['link']}}" />
+        <br>
+        <br>
+        <button type="submit"> Submit </button>
+    </form>
+    {% if link is defined %}
+        <h5>Link:{{link}}</h5>
+    {% endif %}
+</body>
+
+</html>
