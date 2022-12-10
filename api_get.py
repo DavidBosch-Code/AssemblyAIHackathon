@@ -165,10 +165,10 @@ def process_highlights(
     sentiments_list = []
     for i, topic in enumerate(topics):
         sentiments_list.append([])
-        for sent in sentences:
-            if topic in sent:
+        for sentiment in sentiments:
+            if topic in sentiment["text"]:
                 sentiments_list[i].append(
-                    (sent["sentiment"], sent["confidence"])
+                    (sentiment["sentiment"], sentiment["confidence"])
                 )
 
     sentiments_list = resolve_sentiments(sentiments_list)
@@ -181,9 +181,8 @@ def process_highlights(
             "count": highlights[i]["count"]
         }
 
-        if sentiment_analysis_results:
-            node_dict["sentiment"] = sentiments_list[i][0]
-            node_dict["confidence"] = sentiments_list[i][1]
+        node_dict["sentiment"] = sentiments_list[i][0]
+        node_dict["confidence"] = sentiments_list[i][1]
 
         nodes.append(node_dict)
 
