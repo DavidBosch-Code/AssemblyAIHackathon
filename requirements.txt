@@ -4,3 +4,4 @@ python-dotenv
 requests
 youtube-dl
 sentence-transformers
+numpy
