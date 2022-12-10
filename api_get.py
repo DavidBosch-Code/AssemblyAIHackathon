@@ -195,7 +195,7 @@ def process_highlights(
                 counter[speaker] += 1
                 continue
 
-             node_dict = {
+            node_dict = {
                 "id": topic,
                 "count": highlights[i]["count"],
                 "sentiment": sentiments_list[speaker][i][0],
