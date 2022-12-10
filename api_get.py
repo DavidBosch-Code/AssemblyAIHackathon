@@ -1,5 +1,5 @@
 from typing import Mapping
-from typing import Any, List, Dict, Tuple
+from typing import Any, List, Dict, Tuple, Callable, Union
 
 import urllib.parse
 import youtube_dl
@@ -16,6 +16,8 @@ from sentence_transformers import SentenceTransformer
 MAX_AWAIT_SECONDS = 300  # We wait 300 seconds max
 SLEEP_TIME = 5
 
+Node = List[Dict[str, Union[str, int]]]
+Links = List[Dict[str, Union[str, int]]]
 
 def download_yt_as_mp3(out_fn: str, video_url: str):
 
@@ -111,13 +113,10 @@ def await_transcription(transcript_id: str) -> Mapping[str, Any]:
     return response.json()
 
 
-Node = List[Dict[str, str | int]]
-Links = List[Dict[str, str | int]]
-
 
 def process_highlights(
     model: SentenceTransformer,
-    similarity_metric: callable,
+    similarity_metric: Callable,
     highlights: List
 ) -> Tuple[Node, Links]:
 
