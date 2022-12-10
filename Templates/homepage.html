@@ -11,7 +11,6 @@
 
 
 <style>
-
     .node text {
         pointer-events: none;
         font: 10px sans-serif;
@@ -73,7 +72,7 @@
                 .enter().append("line")
                 .attr("class", "link")
                 .attr('stroke', 'blue')
-                .attr('stroke-width', function(d) { return d.value; });;
+                .attr('stroke-width', function (d) { return d.value; });;
 
             var node = svg.selectAll(".node")
                 .data(json.nodes)
@@ -85,8 +84,8 @@
                 .attr("xlink:href", "https://github.com/favicon.ico")
                 .attr("x", -8)
                 .attr("y", -8)
-                .attr("width", function(d){return 16*Math.log(d.count+1)})
-                .attr("height", function(d){return 16*Math.log(d.count+1)});
+                .attr("width", function (d) { return 16 * Math.log(d.count + 1) })
+                .attr("height", function (d) { return 16 * Math.log(d.count + 1) });
 
             node.append("text")
                 .attr("dx", 12)
