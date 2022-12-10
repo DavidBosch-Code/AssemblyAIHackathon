@@ -80,12 +80,17 @@
                 .attr("class", "node")
                 .call(force.drag);
 
-            node.append("image")
-                .attr("xlink:href", "https://github.com/favicon.ico")
-                .attr("x", -8)
-                .attr("y", -8)
-                .attr("width", function (d) { return 16 * Math.log(d.count + 1) })
-                .attr("height", function (d) { return 16 * Math.log(d.count + 1) });
+
+            node.append("circle")
+                .attr("r", function (d) { return 10 * Math.log(d.count + 1) })
+                .attr("fill", function (d) {
+                    if ("sentiment" in d) {
+                        if (d.sentiment === "POSITIVE") return "#00" + Math.round(255 * d.confidence).toString(16) + "00";
+                        if (d.sentiment === "NEUTRAL") return "grey";
+                        if (d.sentiment === "NEGATIVE") return "#" + Math.round(255 * d.confidence).toString(16) + "0000";
+                    } else return "grey";
+                });
+
 
             node.append("text")
                 .attr("dx", 12)
