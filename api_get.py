@@ -1,5 +1,5 @@
 from typing import Mapping
-from typing import Any
+from typing import Any, List, Dict, Tuple
 
 import urllib.parse
 import youtube_dl
@@ -9,6 +9,8 @@ import time
 from config import API_KEY
 from config import ASSEMBLY_UPLOAD_ENDPOINT
 from config import ASSEMBLY_TRANSCRIPT_ENDPOINT
+
+from sentence_transformers import SentenceTransformer, util
 
 
 MAX_AWAIT_SECONDS = 300  # We wait 300 seconds max
@@ -105,3 +107,30 @@ def await_transcription(transcript_id: str) -> Mapping[str, Any]:
         raise Exception('Took too long to process file!')
 
     return response.json()
+
+
+Node = List[Dict[str,str|int]]
+Links = List[Dict[str, str|int]]
+
+def process_highlights(model:SentenceTransformer, similarity_metric:callable, highlights:list) -> Tuple[Node, Links]: 
+    nodes = []
+    links = []
+
+    topics = [highlight["text"] for highlight in highlights]
+
+    embedded_topics = model.encode(topics, convert_to_tensor=True)
+    Similarityscore = similarity_metric(embedded_topics, embedded_topics).numpy()
+
+    for i, topic in enumerate(topics):
+        nodes.append({
+            "id":topic,
+            "group":1
+        }) 
+        for j, topic2 in enumerate(topics):
+            if j<= i: continue
+            links.append({
+                "source":i,
+                "target":j,
+                "value":highlights[i]["count"]*highlights[i]["rank"]*highlights[j]["count"]*highlights[j]["rank"]*Similarityscore[i, j] * 100
+            })
+    return nodes, links

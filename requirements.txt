@@ -3,3 +3,4 @@ flask-sqlalchemy
 python-dotenv
 requests
 youtube-dl
+sentence-transformers

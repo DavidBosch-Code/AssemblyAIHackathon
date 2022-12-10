@@ -4,11 +4,17 @@ from config import ApplicationConfig
 from tempfile import TemporaryDirectory
 import uuid
 import os
+from sentence_transformers import SentenceTransformer, util
+
 
 import api_get
 
 app = Flask(__name__)
 app.config.from_object(ApplicationConfig)
+
+
+model = SentenceTransformer('all-MiniLM-L6-v2')
+
 
 
 def generate_local_fn(type='mp3') -> str:
@@ -47,11 +53,21 @@ def mainpage():
         transcript = get_yt_transcription(link)
         transcript_text = transcript['text']
         auto_highlights = transcript['auto_highlights_result']['results']
+
+        nodes, links = api_get.process_highlights(model, util.cos_sim, auto_highlights)
+
+        graph_data = {
+            "nodes":nodes,
+            "links":links
+        }
+        print(graph_data)
+
         return render_template(
             "homepage.html",
             link=link,
             text=transcript_text,
-            auto_highlights=auto_highlights
+            auto_highlights=auto_highlights,
+            graph_data = graph_data,
         )
     else:
         return render_template('homepage.html')
