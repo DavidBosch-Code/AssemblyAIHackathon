@@ -81,7 +81,7 @@ def mainpage():
         if not link:
             flash("Link cannot be empty")
             return
-        
+
         transcript = check_local_cache(link)
         transcript_in_cache = True if transcript else False
     
@@ -92,9 +92,10 @@ def mainpage():
     
         transcript_text = transcript['text']
         auto_highlights = transcript['auto_highlights_result']['results']
+        sentiment_analysis_results = transcript["sentiment_analysis_results"]
 
         nodes, links = api_get.process_highlights(
-            model, util.cos_sim, auto_highlights)
+            model, util.cos_sim, auto_highlights, sentiment_analysis_results)
 
         graph_data = {
             "nodes": nodes,
