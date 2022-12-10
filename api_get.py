@@ -151,6 +151,7 @@ def process_highlights(
     similarity_metric: Callable,
     highlights: List,
     sentiments: List,
+    threshold:float = 0.25
 ) -> Tuple[str, Dict]:
 
     nodes = {}
@@ -203,10 +204,11 @@ def process_highlights(
                 if sentiments_list[speaker][j][0] == "NA":
                     second_counter += 1
                     continue
+                value = similarity_score[i, j] if similarity_score[i, j] >= threshold else 0
                 links[speaker].append({
                     "source": i - counter[speaker],
                     "target": j - second_counter,
-                    "value": highlights[i]["rank"] * highlights[j]["rank"] * similarity_score[i, j] * 100
+                    "value": highlights[i]["rank"] * highlights[j]["rank"] * value * 100
                 })
 
     return_dict = {}
