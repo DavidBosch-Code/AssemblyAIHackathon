@@ -118,17 +118,27 @@ def await_transcription(transcript_id: str) -> Mapping[str, Any]:
     return response.json()
 
 
-def resolve_sentiments(sentiments: List[List[Tuple[str, float]]]) -> List[Tuple[str, float]]:
+def resolve_sentiments(sentiments_dict: Dict[str, List[List[Tuple[str, float]]]]) -> Dict[str, List[Tuple[str, float]]]:
+    return_dict = {}
+    for key, value in sentiments_dict.items():
+        return_dict[key] = _resolve_sentiments(value)
+    return return_dict
+
+
+def _resolve_sentiments(sentiments: List[List[Tuple[str, float]]]) -> List[Tuple[str, float]]:
     sentiment_values = ["POSITIVE", "NEUTRAL", "NEGATIVE"]
     final_sentiments = []
     for sent_list in sentiments:
+        if not sent_list:
+            final_sentiments.append(("NA", 0))
+            continue
         scores = np.array([0, 0, 0], dtype=float)
         for tups in sent_list:
             if tups[0] == sentiment_values[0]:
                 scores[0] += tups[1]
             elif tups[0] == sentiment_values[1]:
                 scores[1] += tups[1]
-            else:
+            elif tups[0] == sentiment_values[2]:
                 scores[2] += tups[1]
         index = np.argmax(scores)
         final_sentiments.append(
@@ -141,49 +151,68 @@ def process_highlights(
     similarity_metric: Callable,
     highlights: List,
     sentiments: List,
-) -> Tuple[str, Node, Links]:
+) -> Tuple[str, Dict]:
 
-    nodes = []
-    links = []
+    nodes = {}
+    links = {}
+    sentiments_list = {}
 
     conversation = []
-
     topics = [highlight["text"] for highlight in highlights]
 
-    sentiments_list = [[] for _ in range(len(topics))]
     for sentiment in sentiments:
-        conversation.append("Speaker " + sentiment["speaker"] + ": " + sentiment["text"])
-        for idx, topic in enumerate(topics):
+        speaker = sentiment["speaker"]
+        conversation.append("Speaker " + speaker + ": " + sentiment["text"])
+        if speaker not in nodes:
+            nodes[speaker] = []
+            links[speaker] = []
+            sentiments_list[speaker] = [[] for _ in range(len(topics))]
+
+        for i, topic in enumerate(topics):
             if topic in sentiment["text"]:
-                sentiments_list[idx].append(
-                    (sentiment["sentiment"], sentiment["confidence"])
-                )
+                sentiments_list[speaker][i].append(
+                    (sentiment["sentiment"], sentiment["confidence"]))
 
     sentiments_list = resolve_sentiments(sentiments_list)
-    print(sentiments_list)
-
     embedded_topics = model.encode(topics, convert_to_tensor=True)
-    similarity_score = similarity_metric(embedded_topics, embedded_topics).numpy()
+    similarity_score = similarity_metric(
+        embedded_topics, embedded_topics).numpy()
+
+    counter = {}
+    for speaker in nodes:
+        counter[speaker] = 0
 
     for i, topic in enumerate(topics):
-
-        node_dict = {
-            "id": topic,
-            "count": highlights[i]["count"]
-        }
-
-        node_dict["sentiment"] = sentiments_list[i][0]
-        node_dict["confidence"] = sentiments_list[i][1]
-
-        nodes.append(node_dict)
-
-        for j in range(len(topics)):
-            if j <= i:
+        for speaker in nodes:
+            if sentiments_list[speaker][i][0] == "NA":
+                counter[speaker] += 1
                 continue
-            links.append({
-                "source": i,
-                "target": j,
-                "value": highlights[i]["rank"] * highlights[j]["rank"] * similarity_score[i, j] * 100
-            })
 
-    return "\n".join(conversation), nodes, links
+            node_dict = {
+                "id": topic,
+                "count": highlights[i]["count"],
+                "sentiment": sentiments_list[speaker][i][0],
+                "confidence": sentiments_list[speaker][i][1]
+            }
+
+            nodes[speaker].append(node_dict)
+            second_counter = counter[speaker]
+            for j in range(len(topics)):
+                if j <= i:
+                    continue
+                if sentiments_list[speaker][j][0] == "NA":
+                    second_counter += 1
+                    continue
+                links[speaker].append({
+                    "source": i - counter[speaker],
+                    "target": j - second_counter,
+                    "value": highlights[i]["rank"] * highlights[j]["rank"] * similarity_score[i, j] * 100
+                })
+
+    return_dict = {}
+    for speaker in nodes:
+        return_dict[speaker] = {
+            "nodes": nodes[speaker],
+            "links": links[speaker]
+        }
+    return "\n".join(conversation), return_dict

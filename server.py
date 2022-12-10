@@ -49,11 +49,11 @@ def check_local_cache(link: str) -> Mapping[str, Any] | None:
     with open(CSV_CACHE, 'r') as f:
         csvreader = csv.reader(f)
         for row in csvreader:
-            
+
             # Ignore empty rows
             if len(row) == 0:
                 continue
-            
+
             if row[0] == link:
                 fn = row[1]
                 continue
@@ -99,18 +99,12 @@ def mainpage():
         auto_highlights = transcript['auto_highlights_result']['results']
         sentiments = transcript['sentiment_analysis_results']
 
-        transcript_text, nodes, links = api_get.process_highlights(
+        transcript_text, graph_data = api_get.process_highlights(
             model,
             util.cos_sim,
             auto_highlights,
             sentiments,
         )
-
-        graph_data = {
-            "nodes": nodes,
-            "links": links
-        }
-        print(graph_data)
 
         if not transcript_in_cache:
             update_local_cache(link, transcript)
