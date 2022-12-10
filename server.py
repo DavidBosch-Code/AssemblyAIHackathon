@@ -127,13 +127,14 @@ def mainpage():
 
 
 @app.route("/sendOpenAIRequest", methods = ["POST"])
-def sendOpenAIRequest():
+def send_open_AI_request():
     question = request.json["question"]
+    conversation = request.json["conversation"]
 
-    response = {"value": ""}
+    response = api_get.openai_request(conversation + '\n\n' + question)
+    response = {'value': response.choices[0].text}
 
     return jsonify(response), "200"
-
 
 
 if __name__ == '__main__':

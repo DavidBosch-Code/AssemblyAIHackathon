@@ -120,24 +120,27 @@
     {%endif%}
 
     <script>
-        function submitButton(value){
-            url = "localhost:5000/sendOpenAIRequest"
-            axios.post(url, data = {"question" : value}).then(
-                function(response){
-                    document.getElementById("OpenAIresponses").innerHTML() = "<p>" + response.data["value"] +"</p>"
-                }  
-            )
+        const conversation = {% if text is defined %}{% for t in text %} "{{ t }}" + {% endfor %}{% endif %} "";
 
+        function submitButton(value){
+            url = "http://localhost:5000/sendOpenAIRequest"
+            axios.post(url, data = {"question": value, "conversation": conversation}).then(
+                function(response){
+                    document.getElementById("OpenAIResponses").innerHTML = "<p>" + response.data["value"] +"</p>";
+                }
+            ).catch(function(error) {
+                console.log(error);
+            });
         }
     </script>
 
-    <div id="OpenAIresponses"></div>
+    <div id="OpenAIResponses"></div>
     
     <form id="sendAxiosRequest">
         <textarea id="sendAxiosRequestValue" name="sendAxios" rows="4" cols="50">
             Ask a question?
         </textarea>
-        <button onclick= "submitButton(document.getElementById('sendAxiosRequestValue').value)">Submit</button>
+        <button onclick="submitButton(document.getElementById('sendAxiosRequestValue').value)" type="button">Submit</button>
     </form>
 </body>
 
