@@ -1,0 +1,5 @@
+1. Color of node color dependent on sentiment
+2. Get coocurrance count with sentences - possibly use the time variable in the highlights
+3. Get multiple videos
+4. Better topics from transcription - topicBert?
+5 

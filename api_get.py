@@ -124,7 +124,8 @@ def process_highlights(model:SentenceTransformer, similarity_metric:callable, hi
     for i, topic in enumerate(topics):
         nodes.append({
             "id":topic,
-            "group":1
+            "group":1,
+            "count":highlights[i]["count"]
         }) 
         for j, topic2 in enumerate(topics):
             if j<= i: continue
