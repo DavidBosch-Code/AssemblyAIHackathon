@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, flash
+from flask import Flask, request, render_template, flash, jsonify
 from config import ApplicationConfig
 from tempfile import TemporaryDirectory
 from typing import Mapping, Any
@@ -124,6 +124,16 @@ def mainpage():
         )
     else:
         return render_template('homepage.html')
+
+
+@app.route("/sendOpenAIRequest", methods = ["POST"])
+def sendOpenAIRequest():
+    question = request.json["question"]
+
+    response = {"value": ""}
+
+    return jsonify(response), "200"
+
 
 
 if __name__ == '__main__':

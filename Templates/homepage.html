@@ -8,6 +8,7 @@
     <title>Document</title>
 </head>
 <script src="//d3js.org/d3.v3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.27.2/axios.min.js" integrity="sha512-odNmoc1XJy5x1TMVMdC7EMs3IVdItLPlCeL5vSUPN2llYKMJ2eByTTAIiiuqLg+GdNr9hF6z81p27DArRFKT7A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
 
 <style>
@@ -117,6 +118,27 @@
     {%endfor%}
 
     {%endif%}
+
+    <script>
+        function submitButton(value){
+            url = "localhost:5000/sendOpenAIRequest"
+            axios.post(url, data = {"question" : value}).then(
+                function(response){
+                    document.getElementById("OpenAIresponses").innerHTML() = "<p>" + response.data["value"] +"</p>"
+                }  
+            )
+
+        }
+    </script>
+
+    <div id="OpenAIresponses"></div>
+    
+    <form id="sendAxiosRequest">
+        <textarea id="sendAxiosRequestValue" name="sendAxios" rows="4" cols="50">
+            Ask a question?
+        </textarea>
+        <button onclick= "submitButton(document.getElementById('sendAxiosRequestValue').value)">Submit</button>
+    </form>
 </body>
 
 </html>
