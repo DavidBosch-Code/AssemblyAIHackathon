@@ -65,7 +65,7 @@ def submit_transcription_file(upload_url: str) -> str:
     json = {
         "audio_url": upload_url,
         "auto_highlights": True,
-        "sentiment_analysis": True,
+        "sentiment_analysis": True
     }
 
     headers = {

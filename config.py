@@ -19,3 +19,6 @@ ASSEMBLY_UPLOAD_ENDPOINT = ASSEMBLY_URL + 'upload'
 ASSEMBLY_TRANSCRIPT_ENDPOINT = ASSEMBLY_URL + 'transcript'
 
 API_KEY = os.environ["API_KEY"]
+
+CACHE_FOLDER = os.path.join(os.getcwd(), 'cache')
+CSV_CACHE = os.path.join(CACHE_FOLDER, 'cache.csv')
