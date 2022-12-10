@@ -96,11 +96,10 @@ def mainpage():
         else:
             print('loaded from cache!')
 
-        transcript_text = transcript['text']
         auto_highlights = transcript['auto_highlights_result']['results']
         sentiments = transcript['sentiment_analysis_results']
 
-        nodes, links = api_get.process_highlights(
+        transcript_text, nodes, links = api_get.process_highlights(
             model,
             util.cos_sim,
             auto_highlights,

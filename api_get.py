@@ -66,7 +66,8 @@ def submit_transcription_file(upload_url: str) -> str:
     json = {
         "audio_url": upload_url,
         "auto_highlights": True,
-        "sentiment_analysis": True
+        "sentiment_analysis": True,
+        "speaker_labels": True
     }
 
     headers = {
@@ -140,15 +141,18 @@ def process_highlights(
     similarity_metric: Callable,
     highlights: List,
     sentiments: List,
-) -> Tuple[Node, Links]:
+) -> Tuple[str, Node, Links]:
 
     nodes = []
     links = []
+
+    conversation = []
 
     topics = [highlight["text"] for highlight in highlights]
 
     sentiments_list = [[] for _ in range(len(topics))]
     for sentiment in sentiments:
+        conversation.append("Speaker " + sentiment["speaker"] + ": " + sentiment["text"])
         for idx, topic in enumerate(topics):
             if topic in sentiment["text"]:
                 sentiments_list[idx].append(
@@ -182,4 +186,4 @@ def process_highlights(
                 "value": highlights[i]["rank"] * highlights[j]["rank"] * similarity_score[i, j] * 100
             })
 
-    return nodes, links
+    return "\n".join(conversation), nodes, links
