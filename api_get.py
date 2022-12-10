@@ -16,8 +16,9 @@ from sentence_transformers import SentenceTransformer
 MAX_AWAIT_SECONDS = 300  # We wait 300 seconds max
 SLEEP_TIME = 5
 
-Node = List[Dict[str, Union[str, int]]]
-Links = List[Dict[str, Union[str, int]]]
+Node = List[Dict[str, str | int]]
+Links = List[Dict[str, str | int]]
+
 
 def download_yt_as_mp3(out_fn: str, video_url: str):
 
@@ -111,7 +112,6 @@ def await_transcription(transcript_id: str) -> Mapping[str, Any]:
         raise Exception('Took too long to process file!')
 
     return response.json()
-
 
 
 def process_highlights(
