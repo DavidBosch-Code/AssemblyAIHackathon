@@ -49,9 +49,14 @@ def check_local_cache(link: str) -> Mapping[str, Any] | None:
     with open(CSV_CACHE, 'r') as f:
         csvreader = csv.reader(f)
         for row in csvreader:
+            
+            # Ignore empty rows
+            if len(row) == 0:
+                continue
+            
             if row[0] == link:
                 fn = row[1]
-                break
+                continue
     if not fn:
         return None
 

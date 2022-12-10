@@ -146,33 +146,20 @@ def process_highlights(
     links = []
 
     topics = [highlight["text"] for highlight in highlights]
-    sentences = [sentence["text"] for sentence in sentiments]
 
-    cooccurrence_matrix = np.zeros((len(topics), len(topics)))
-    for sentence in sentences:
-        sentence_list = []
+    sentiments_list = [[] for _ in range(len(topics))]
+    for sentiment in sentiments:
         for idx, topic in enumerate(topics):
-            if topic in sentence:
-                sentence_list.append(idx)
-
-        for i in sentence_list:
-            for j in sentence_list[i+1:]:
-                cooccurrence_matrix[i][j] += 1
-                cooccurrence_matrix[j][i] += 1
-
-    print(cooccurrence_matrix)
-
-    sentiments_list = []
-    for i, topic in enumerate(topics):
-        sentiments_list.append([])
-        for sentiment in sentiments:
             if topic in sentiment["text"]:
-                sentiments_list[i].append(
+                sentiments_list[idx].append(
                     (sentiment["sentiment"], sentiment["confidence"])
                 )
 
     sentiments_list = resolve_sentiments(sentiments_list)
     print(sentiments_list)
+
+    embedded_topics = model.encode(topics, convert_to_tensor=True)
+    similarity_score = similarity_metric(embedded_topics, embedded_topics).numpy()
 
     for i, topic in enumerate(topics):
 
@@ -192,7 +179,7 @@ def process_highlights(
             links.append({
                 "source": i,
                 "target": j,
-                "value": highlights[i]["rank"] * highlights[j]["rank"] * cooccurrence_matrix[i, j] * 100
+                "value": highlights[i]["rank"] * highlights[j]["rank"] * similarity_score[i, j] * 100
             })
 
     return nodes, links
