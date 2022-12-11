@@ -23,7 +23,7 @@
     <div class="file_input_area">
         <section class="file_input_area_section">
             <h3 class="instructions"> Give a youtube link which you want visualized </h3>
-            <form method="post" class="link_form">
+            <form method="post" class="link_form" autocomplete="off">
                 <!-- <label class="link_label" for="link">Link:</label> -->
                 <input type="text" name="link" class="link_text_input" placeholder="Give a link"
                     value="{{request.form['link']}}" />
@@ -31,6 +31,7 @@
                 <button class="link_submit_button" type="submit"> Submit </button>
             </form>
         </section>
+{% if text is defined %}
         <div class="audioplayer">
             {% if mp3_loc is defined %}
             <figure>
@@ -75,11 +76,11 @@
             <div class="Key-Insights_div_box">
                 <div class="Key-Insights-inner-div">
                     <h5 class="Key-Insights-title">Update Transcript</h5>
-                    <div id="conclusionstext" class="Key-Insights-text">
+                    <div class="Key-Insights-text">
                         {% if text is defined %}
-                        <form id="sendAxiosRequest">
-                            <textarea class="sendAxiosRequestValue" id="sendAxiosTranscriptText" name="sendAxiosTranscript" rows="25" cols="100">{% for t in text %}{{ t }}
-{% endfor %}</textarea>
+                        <form id="sendAxiosRequest" autocomplete="off">
+                            <textarea class="sendAxiosRequestValue" id="sendAxiosTranscriptText" name="sendAxiosTranscript" rows="25" cols="100">{% for t in text %}
+{{ t }}{% endfor %}</textarea>
                             <button class="submitButton_later" onclick="submitTranscript(document.getElementById('sendAxiosTranscriptText').value)"
                                 type="button">Submit</button>
                         </form>
@@ -107,7 +108,7 @@
                         <div class="Key-Insights-inner-div">
                             <h5 class="Key-Insights-title">Ask OpenAI a Question</h5>
                             <div class="ask-questions">
-                                <form id="sendAxiosRequest">
+                                <form id="sendAxiosRequest" autocomplete="off">
                                     <textarea id="sendAxiosRequestValue" class="sendAxiosRequestValue" name="sendAxios"
                                         rows="4" cols="200"></textarea>
                                     <button class="submitButton_later"
@@ -119,12 +120,23 @@
                     </div>
                 </div>
                 </div>
-</body>
 
+                <div class="Key-Insights-2">
+                    <div class="Key-Insights_div_box-2">
+                        <div class="Key-Insights-inner-div-2">
+                            <h5 class="Key-Insights-title-2">Question Answer</h5>
+                            <div id="OpenAIResponses" class="Key-Insights-text">
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+</body>
+{% endif %}
 
 
 <script>
-    var conversation = {% if text is defined %}{% for t in text %} "{{ t }}" + {% endfor %}{% endif %} "";
+    var conversation = {% if openai_conversation is defined %}{% for t in openai_conversation %} "{{ t }}" + {% endfor %}{% endif %} "";
 
     function submitButton(value) {
         url = "http://localhost:5000/sendOpenAIRequest"
@@ -143,7 +155,7 @@
             function (response) {
                 document.getElementById("summarytext").innerHTML = response.data["summary"];
                 document.getElementById("conclusionstext").innerHTML = response.data["conclusions"];
-                conversation = document.getElementById('sendAxiosTranscriptText').value;
+                conversation = response.data["conversation"];
             }
         ).catch(function (error) {
             console.log(error);

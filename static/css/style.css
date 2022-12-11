@@ -150,8 +150,8 @@ body {
     border-width: 0.1em;
     box-shadow: 1px 1px;
     border-style: solid;
+    overflow-y: auto;
 }
-
 
 .Key-Insights_div_box, .transcipt_div_box{
     width: 1000px;
@@ -215,6 +215,7 @@ body {
     box-shadow: 1px 1px;
     border-style:auto;
 }
+
 .Key-Insights-inner-div{
     width: 975px;
     height: 185px;
@@ -248,10 +249,6 @@ body {
     margin-top: -10px;
     margin-left: 5px;
     border-radius: 10px;
-    white-space: normal;
-    text-align: left;
-    -moz-text-align-last: left; /* Firefox 12+ */
-    text-align-last: left;
     padding-left:1em;
     font-family: sans-serif;
 

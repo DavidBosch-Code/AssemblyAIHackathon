@@ -106,17 +106,22 @@ def mainpage():
 
         if not transcript_in_cache:
             update_local_cache(link, transcript, mp3_loc)
-        
+
         # Would make sense to cache this in the future as well
-        transcript_summary = api_get.openai_summary(conversation)
-        transcript_conclusions = api_get.openai_conclusions(conversation)
+        condensed_conversation = api_get.openai_condense(conversation)
+
+        transcript_summary = api_get.openai_summary(condensed_conversation)
+        transcript_conclusions = api_get.openai_conclusions(
+            condensed_conversation)
 
         link_encoded = urllib.parse.urlencode({"link": link})
 
         return render_template(
             "newHomepage.html",
             link=link,
-            text=conversation,
+            text=[val for val in conversation if val.strip()],
+            openai_conversation=[
+                val for val in condensed_conversation if val.strip()],
             auto_highlights=auto_highlights,
             graph_data=graph_data,
             summary=transcript_summary,
@@ -139,27 +144,31 @@ def return_mp3():
         return str(e)
 
 
-@app.route("/sendOpenAIRequest", methods = ["POST"])
+@app.route("/sendOpenAIRequest", methods=["POST"])
 def send_open_AI_request():
     question = request.json["question"]
     conversation = request.json["conversation"]
-
-    response = api_get.openai_request(conversation + '\n\n' + question)
+    task = "CONVERSATION START\n"
+    prompt = task + conversation + "\nCONVERSATION END"
+    response = api_get.openai_request(prompt + '\n\n' + question + '\n\n')
     response = {'value': response.choices[0].text}
 
     return jsonify(response), "200"
 
 
-@app.route("/sendUpdatedTranscript", methods = ["POST"])
+@app.route("/sendUpdatedTranscript", methods=["POST"])
 def reevaluate_transcript():
     updated_transcript = request.json["transcript"]
     updated_transcript = updated_transcript.split("\n")
-    updated_transcript = [sentence.strip() for sentence in updated_transcript if sentence.strip()]
+    updated_transcript = [sentence.strip()
+                          for sentence in updated_transcript if sentence.strip()]
 
-    transcript_summary = api_get.openai_summary(updated_transcript)
-    transcript_conclusions = api_get.openai_conclusions(updated_transcript)
+    condensed_conversation = api_get.openai_condense(updated_transcript)
+    transcript_summary = api_get.openai_summary(condensed_conversation)
+    transcript_conclusions = api_get.openai_conclusions(condensed_conversation)
 
     response = {
+        'conversation': "\n".join([val for val in condensed_conversation if val.strip()]),
         'summary': transcript_summary,
         'conclusions': transcript_conclusions
     }

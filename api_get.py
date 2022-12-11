@@ -16,6 +16,7 @@ from sentence_transformers import SentenceTransformer
 import numpy as np
 from openai.openai_response import OpenAIResponse
 import openai
+import math
 
 
 openai.api_key = OPENAI_API_KEY
@@ -23,9 +24,8 @@ openai.api_key = OPENAI_API_KEY
 MAX_AWAIT_SECONDS = 300  # We wait 300 seconds max
 SLEEP_TIME = 5
 OPENAI_MODEL = 'text-curie-001'
-
-Node = List[Dict[str, str | int]]
-Links = List[Dict[str, str | int]]
+MAX_TOKEN_COUNT = 2000
+MAX_DEPTH = 4
 
 
 def download_yt_as_mp3(out_fn: str, video_url: str):
@@ -157,7 +157,7 @@ def process_highlights(
     similarity_metric: Callable,
     highlights: List[Mapping[str, Any]],
     sentiments: List[Mapping[str, Any]],
-    threshold:float = 0.25
+    threshold: float = 0.25
 ) -> Tuple[List[str], Dict]:
 
     nodes = {}
@@ -210,7 +210,8 @@ def process_highlights(
                 if sentiments_list[speaker][j][0] == "NA":
                     second_counter += 1
                     continue
-                value = similarity_score[i, j] if similarity_score[i, j] >= threshold else 0
+                value = similarity_score[i,
+                                         j] if similarity_score[i, j] >= threshold else 0
                 links[speaker].append({
                     "source": i - counter[speaker],
                     "target": j - second_counter,
@@ -227,9 +228,61 @@ def process_highlights(
     return conversation, return_dict
 
 
+def get_conversation_word_count(conversation: List[str]) -> str:
+    word_count = 0
+    for sentence in conversation:
+        word_count += len(sentence.split())
+    return word_count
+
+
+def openai_condense(conversation: List[str], depth=0) -> str:
+
+    if depth >= MAX_DEPTH:
+        raise Exception("Stop feeding me such long videos!")
+
+    word_count = get_conversation_word_count(conversation)
+
+    max_word_count = MAX_TOKEN_COUNT // 2
+
+    num_sections = math.ceil(word_count / max_word_count)
+
+    if num_sections == 1:
+        return conversation
+
+    words_per_section = word_count // num_sections
+
+    print(num_sections, words_per_section)
+
+    i = 0
+    cur_section = []
+    num_words_in_cur_section = 0
+    final_result = []
+
+    task = "Rewrite the following conversation, removing uninteresting and irrelevant sentences:\n\n"
+
+    while i < len(conversation):
+        cur_section.append(conversation[i])
+        num_words_in_cur_section += len(conversation[i].split())
+        if num_words_in_cur_section >= words_per_section:
+            prompt = task + '\n'.join(cur_section)
+            response = openai_request(
+                prompt, max_tokens=512, temperature=0.2).choices[0].text
+            final_result.extend(response.split("\n"))
+            num_words_in_cur_section = 0
+            cur_section = []
+        i += 1
+
+    print('\n'.join(final_result))
+
+    return openai_condense(final_result, depth=depth+1)
+
+
 def openai_summary(conversation: List[str]) -> str:
-    task = "Summarize the following conversation into a few sentences:\n\n"
-    prompt = task + '\n'.join(conversation)
+    task = "CONVERSATION START\n"
+    prompt = task + \
+        '\n'.join([val for val in conversation if val.strip()]) + \
+        "\nCONVERSATION END"
+    prompt += "\n\nSummarize the prior conversation into a few sentences.\n"
 
     response = openai_request(prompt)
 
@@ -237,22 +290,25 @@ def openai_summary(conversation: List[str]) -> str:
 
 
 def openai_conclusions(conversation: List[str]) -> str:
-    task = "Provide the top three takeaways from the following conversation:\n\n"
-    prompt = task + '\n'.join(conversation)
+    task = "CONVERSATION START\n"
+    prompt = task + \
+        '\n'.join([val for val in conversation if val.strip()]) + \
+        "\nCONVERSATION END"
+    prompt += "\n\List the top three conclusions a reader can take away from the following conversation.\n"
 
     response = openai_request(prompt)
 
     return response.choices[0].text
 
 
-def openai_request(prompt: str) -> OpenAIResponse:
+def openai_request(prompt: str, max_tokens: int = 512, temperature: float = 0.7) -> OpenAIResponse:
     print(prompt)
 
     response = openai.Completion.create(
         model=OPENAI_MODEL,
         prompt=prompt,
-        temperature=0.7,
-        max_tokens=512,
+        temperature=temperature,
+        max_tokens=max_tokens,
     )
 
     print(response)
