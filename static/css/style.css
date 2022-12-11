@@ -101,6 +101,11 @@ body {
     background-color: #7878db;
 
 }
+.audioplayer{
+    margin-left: 10em;
+    padding-left: 25em;
+    padding-top: 0.3em;
+}
 
 .graph_area_divs, .Key-Insights, .AskQuestions{
     padding:1em;
