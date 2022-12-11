@@ -34,15 +34,19 @@
     <h5>Link: {{ link }}</h5>
     {% endif %}
     {% if text is defined %}
-    {% for t in text %}
-        <p>{{ t }}</p>
-    {% endfor %}
+    <form id="sendAxiosRequest">
+        <textarea id="sendAxiosTranscriptText" name="sendAxiosTranscript" cols="100">
+{% for t in text %}{{ t }}
+{% endfor %}
+        </textarea>
+        <button onclick="submitTranscript(document.getElementById('sendAxiosTranscriptText').value)" type="button">Submit</button>
+    </form>
     {% endif %}
     {% if summary is defined %}
-    <h5>Conversation summary: {{ summary }}</h5>
+    <h5 id="summarytext">Conversation summary: {{ summary }}</h5>
     {% endif %}
     {% if conclusions is defined %}
-    <h5>Conversation takeaways: {{ conclusions }}</h5>
+    <h5 id="conclusionstext">Conversation takeaways: {{ conclusions }}</h5>
     {% endif %}
 
     {%if graph_data is defined%}
@@ -120,13 +124,25 @@
     {%endif%}
 
     <script>
-        const conversation = {% if text is defined %}{% for t in text %} "{{ t }}" + {% endfor %}{% endif %} "";
-
+        var conversation = {% if text is defined %}{% for t in text %} "{{ t }}" + {% endfor %}{% endif %} "";
         function submitButton(value){
-            url = "http://localhost:5000/sendOpenAIRequest"
+            url = "/sendOpenAIRequest";
             axios.post(url, data = {"question": value, "conversation": conversation}).then(
                 function(response){
                     document.getElementById("OpenAIResponses").innerHTML = "<p>" + response.data["value"] +"</p>";
+                }
+            ).catch(function(error) {
+                console.log(error);
+            });
+        }
+
+        function submitTranscript(transcript) {
+            url = "/sendUpdatedTranscript";
+            axios.post(url, data = {"transcript": transcript}).then(
+                function(response){
+                    document.getElementById("summarytext").innerHTML = "Conversation summary: " + response.data["summary"];
+                    document.getElementById("conclusionstext").innerHTML = "Conversation takeaways:" + response.data["conclusions"];
+                    conversation = document.getElementById('sendAxiosTranscriptText').value;
                 }
             ).catch(function(error) {
                 console.log(error);

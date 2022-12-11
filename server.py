@@ -137,5 +137,22 @@ def send_open_AI_request():
     return jsonify(response), "200"
 
 
+@app.route("/sendUpdatedTranscript", methods = ["POST"])
+def reevaluate_transcript():
+    updated_transcript = request.json["transcript"]
+    updated_transcript = updated_transcript.split("\n")
+    updated_transcript = [sentence.strip() for sentence in updated_transcript if sentence.strip()]
+
+    transcript_summary = api_get.openai_summary(updated_transcript)
+    transcript_conclusions = api_get.openai_conclusions(updated_transcript)
+
+    response = {
+        'summary': transcript_summary,
+        'conclusions': transcript_conclusions
+    }
+
+    return jsonify(response), "200"
+
+
 if __name__ == '__main__':
     app.run(debug=True, threaded=True)
