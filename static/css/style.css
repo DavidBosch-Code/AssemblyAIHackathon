@@ -1,6 +1,10 @@
 .node text {
     pointer-events: none;
-    font: 10px sans-serif;
+    font: 12px sans-serif;
+}
+
+.line {
+    color:black
 }
 
 html {
@@ -21,6 +25,15 @@ main,
 nav,
 section {
     display: block;
+}
+
+html, body {
+    height: 100%;
+    margin-left: 10%;
+}
+
+body {
+    vertical-align: middle;
 }
 
 body {
@@ -77,14 +90,32 @@ body {
     background-color: #7878db;
 }
 
-.graph_area_divs, .Key-Insights{
-    position: relative;
+.submitButton_later{
+    float:right;
+    padding: 10px 15px;
+    margin-top: 1.1em;
+    margin-right: 1.5em;
+    box-sizing: border-box;
+    font-size: 1.3em;  
+    border-radius: 10px;
+    background-color: #7878db;
+
+}
+
+.graph_area_divs, .Key-Insights, .AskQuestions{
     padding:1em;
     padding-top: 1.5em;
     clear: both
 }
 
-.graph_section, .summary, .Key-Insights_div_box{
+.Key-Insights-2{
+    float:left;
+    padding:1em;
+    /* padding-top: 1.5em; */
+    margin-top: -2em;
+}
+
+.graph_section, .summary, .Key-Insights_div_box, .transcipt_div_box, .transcipt{
     float:left;
     padding:1em;
     margin-right: 0.8em;
@@ -98,9 +129,32 @@ body {
     border-style: solid;
 }
 
-.Key-Insights_div_box{
+.graph_section, .summary{
+    margin-right: 2em;
+}
+
+.Key-Insights_div_box-2{
+    float:left;
+    padding:1em;
+    margin-right: 0.8em;
+    padding-top: 0.1em;
+    background-color: #353558;
+    width: 400px;
+    height: 400px;
+    border-radius: 20px;
+    border-width: 0.1em;
+    box-shadow: 1px 1px;
+    border-style: solid;
+}
+
+
+.Key-Insights_div_box, .transcipt_div_box{
     width: 1000px;
     height: 200px;
+}
+.Key-Insights_div_box-2{
+    width: 400px;
+    height:200px;
 }
 
 .title{
@@ -108,8 +162,14 @@ body {
     margin-left:0.8em;
 }
 
-.summary_title, .Key-Insights-title{
+.summary_title, .Key-Insights-title, .Key-Insights-title-2{
     margin-top: 10px;
+    font-size: large;
+    text-align: center;
+}
+.graph_title{
+    margin-top: 10px;
+    padding-top: 15px;
     font-size: large;
     text-align: center;
 }
@@ -121,6 +181,22 @@ body {
 .Key-Insights-text, .ask-questions{
     margin-top: -10px;
     margin-left: 15px;
+}
+
+.graph_section_internal{
+ background-color: #7878db;
+    margin-top: 20px;
+    margin-left: 15px;
+    width: 370px;
+    height: 370px;
+    border-radius: 20px;
+    box-shadow: 1px 1px;
+    border-style:auto;
+}
+
+.graph{
+    margin-top: -6em;
+    margin-left:-3em;
 }
 
 .summary_div_box{
@@ -154,11 +230,16 @@ body {
     display: none;
 }
 
+.sendAxiosRequestValue::-webkit-scrollbar{
+    display: none;
+}
+
+
 .sendAxiosRequestValue{
-    width: 920px;
+    width: 800px;
     height: 100px;
     overflow-y:auto;
-    background-color: #e7e7f5;
+    background-color: #c4c4f8;
     margin-top: -10px;
     margin-left: 5px;
     border-radius: 10px;
@@ -166,6 +247,12 @@ body {
     text-align: left;
     -moz-text-align-last: left; /* Firefox 12+ */
     text-align-last: left;
-    text-indent: 20px;
+    padding-left:1em;
+    font-family: sans-serif;
 
+}
+
+.sendAxiosTranscriptText{
+    width: 920px;
+    height: 50px;
 }

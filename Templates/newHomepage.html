@@ -35,10 +35,18 @@
 
         <div class="graph_area_divs">
             <section class="graph_section">
-                <div id="my_graph_A"></div>
+            <div class="graph_section_internal">
+                <h5 class="graph_title">Speaker A Graph</h5>
+                <div class="graph" id="my_graph_A"></div>
+            </div>
             </section>
             <section class="graph_section">
-                <div id="my_graph_B"></div>
+                <div class="graph_section_internal">
+                <h5 class="graph_title">Speaker B Graph</h5>
+                <div class="graph" id="my_graph_B">
+
+                </div>
+            </div>
             </section>
             <section class="summary">
                 <div class="summary_div_box">
@@ -60,138 +68,154 @@
                     <div id="conclusionstext" class="Key-Insights-text">
                         {% if text is defined %}
                         <form id="sendAxiosRequest">
-                            <textarea id="sendAxiosTranscriptText" name="sendAxiosTranscript" rows="25" cols="100">
-                        {% for t in text %}{{ t }}
-                        {% endfor %}
-                            </textarea>
-                            <button onclick="submitTranscript(document.getElementById('sendAxiosTranscriptText').value)" type="button">Submit</button>
+                            <textarea class="sendAxiosRequestValue" id="sendAxiosTranscriptText" name="sendAxiosTranscript" rows="25" cols="100">{% for t in text %}{{ t }}
+{% endfor %}</textarea>
+                            <button class="submitButton_later" onclick="submitTranscript(document.getElementById('sendAxiosTranscriptText').value)"
+                                type="button">Submit</button>
                         </form>
-                        {% endif %}                
-                    </div>
-                </div>
-            </div>
-
-        <div class="Key-Insights">
-            <div class="Key-Insights_div_box">
-                <div class="Key-Insights-inner-div">
-                    <h5 class="Key-Insights-title">Key Insights</h5>
-                    <div id="conclusionstext" class="Key-Insights-text">
-                        {% if conclusions is defined %}
-                        {{ conclusions }}
                         {% endif %}
                     </div>
                 </div>
             </div>
+        </div>
 
-        <div class="AskQuestions">
-            <div class="Key-Insights_div_box">
-                <div class="Key-Insights-inner-div">
-                    <h5 class="Key-Insights-title">Ask OpenAI a Question</h5>
-                    <div class="ask-questions">
-                        <form id="sendAxiosRequest">
-                            <textarea id="sendAxiosRequestValue" class="sendAxiosRequestValue" name="sendAxios" rows="4" cols="200"></textarea>
-                            <button onclick="submitButton(document.getElementById('sendAxiosRequestValue').value)" type="button">Submit</button>
-                        </form>
+            <div class="Key-Insights-2">
+                <div class="Key-Insights_div_box-2">
+                    <div class="Key-Insights-inner-div-2">
+                        <h5 class="Key-Insights-title-2">Key Insights</h5>
+                        <div id="conclusionstext" class="Key-Insights-text">
+                            {% if conclusions is defined %}
+                            {{ conclusions }}
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </body>
+
+                <div class="AskQuestions">
+                    <div class="Key-Insights_div_box">
+                        <div class="Key-Insights-inner-div">
+                            <h5 class="Key-Insights-title">Ask OpenAI a Question</h5>
+                            <div class="ask-questions">
+                                <form id="sendAxiosRequest">
+                                    <textarea id="sendAxiosRequestValue" class="sendAxiosRequestValue" name="sendAxios"
+                                        rows="4" cols="200"></textarea>
+                                    <button class="submitButton_later"
+                                        onclick="submitButton(document.getElementById('sendAxiosRequestValue').value)"
+                                        type="button">Submit</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+</body>
 
 
 
 <script>
     var conversation = {% if text is defined %}{% for t in text %} "{{ t }}" + {% endfor %}{% endif %} "";
 
-    function submitButton(value){
+    function submitButton(value) {
         url = "http://localhost:5000/sendOpenAIRequest"
-        axios.post(url, data = {"question": value, "conversation": conversation}).then(
-            function(response){
-                document.getElementById("OpenAIResponses").innerHTML = "<p>" + response.data["value"] +"</p>";
+        axios.post(url, data = { "question": value, "conversation": conversation }).then(
+            function (response) {
+                document.getElementById("OpenAIResponses").innerHTML = "<p>" + response.data["value"] + "</p>";
             }
-        ).catch(function(error) {
+        ).catch(function (error) {
             console.log(error);
         });
     }
 
     function submitTranscript(transcript) {
-            url = "/sendUpdatedTranscript";
-            axios.post(url, data = {"transcript": transcript}).then(
-                function(response){
-                    document.getElementById("summarytext").innerHTML = response.data["summary"];
-                    document.getElementById("conclusionstext").innerHTML = response.data["conclusions"];
-                    conversation = document.getElementById('sendAxiosTranscriptText').value;
-                }
-            ).catch(function(error) {
-                console.log(error);
-            });
-        }
+        url = "/sendUpdatedTranscript";
+        axios.post(url, data = { "transcript": transcript }).then(
+            function (response) {
+                document.getElementById("summarytext").innerHTML = response.data["summary"];
+                document.getElementById("conclusionstext").innerHTML = response.data["conclusions"];
+                conversation = document.getElementById('sendAxiosTranscriptText').value;
+            }
+        ).catch(function (error) {
+            console.log(error);
+        });
+    }
 </script>
-    {%if graph_data is defined%}
-    {%for speaker, graph in graph_data.items()%}
-    <script>
-        var data = JSON.parse('{{ graph | tojson | safe}}');
+{%if graph_data is defined%}
+{%for speaker, graph in graph_data.items()%}
+<script>
+    var data = JSON.parse('{{ graph | tojson | safe}}');
 
-        var width = 400,
-            height = 400
+    var width = 400,
+        height = 400
 
-        var svg = d3.select("#my_graph_{{speaker}}").append("svg")
-            .attr("width", width)
-            .attr("height", height);
+    var svg = d3.select("#my_graph_{{speaker}}").append("svg")
+        .attr("width", width)
+        .attr("height", height);
 
-        var force = d3.layout.force()
-            .gravity(0.05)
-            .distance(100)
-            .charge(-100)
-            .size([width, height]);
+    var force = d3.layout.force()
+        .gravity(0.05)
+        .distance(100)
+        .charge(-100)
+        .size([width, height]);
 
-        function graph(json) {
-            force
-                .nodes(json.nodes)
-                .links(json.links)
-                .start();
+    function graph(json) {
+        force
+            .nodes(json.nodes)
+            .links(json.links)
+            .start();
 
-            var link = svg.selectAll(".link")
-                .data(json.links)
-                .enter().append("line")
-                .attr("class", "link")
-                .attr('stroke', 'blue')
-                .attr('stroke-width', function (d) { return d.value; });;
+        var link = svg.selectAll(".link")
+            .data(json.links)
+            .enter().append("line")
+            .attr("class", "link")
+            .attr('stroke', 'black')
+            .attr('stroke-width', function (d) { return 5*d.value; });;
 
-            var node = svg.selectAll(".node")
-                .data(json.nodes)
-                .enter().append("g")
-                .attr("class", "node")
-                .call(force.drag);
-
-
-            node.append("circle")
-                .attr("r", function (d) { return 10 * Math.log(d.count + 1) })
-                .attr("fill", function (d) {
-                    if ("sentiment" in d) {
-                        if (d.sentiment === "POSITIVE") return "#00" + Math.round(255 * d.confidence).toString(16) + "00";
-                        if (d.sentiment === "NEUTRAL") return "grey";
-                        if (d.sentiment === "NEGATIVE") return "#" + Math.round(255 * d.confidence).toString(16) + "0000";
-                    } else return "grey";
-                });
+        var node = svg.selectAll(".node")
+            .data(json.nodes)
+            .enter().append("g")
+            .attr("class", "node")
+            .call(force.drag);
 
 
-            node.append("text")
-                .attr("dx", 12)
-                .attr("dy", ".35em")
-                .text(function (d) { return d.id });
-
-            force.on("tick", function () {
-                link.attr("x1", function (d) { return d.source.x; })
-                    .attr("y1", function (d) { return d.source.y; })
-                    .attr("x2", function (d) { return d.target.x; })
-                    .attr("y2", function (d) { return d.target.y; });
-
-                node.attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; });
+        node.append("circle")
+            .attr("r", function (d) { return 10 * Math.log(d.count + 1) })
+            .attr("fill", function (d) {
+                if ("sentiment" in d) {
+                    if (d.sentiment === "POSITIVE") return "#00" + Math.round(255 * d.confidence).toString(16) + "00";
+                    if (d.sentiment === "NEUTRAL") return "grey";
+                    if (d.sentiment === "NEGATIVE") return "#" + Math.round(255 * d.confidence).toString(16) + "0000";
+                } else return "grey";
             });
-        }
-        graph(data)
-    </script>
 
-    {%endfor%}
-    {%endif%}
+
+        node.append("text")
+            .attr("dx", 12)
+            .attr("dy", ".35em")
+            .text(function (d) { return d.id });
+
+        force.on("tick", function () {
+            link.attr("x1", function (d) { return d.source.x; })
+                .attr("y1", function (d) { return d.source.y; })
+                .attr("x2", function (d) { return d.target.x; })
+                .attr("y2", function (d) { return d.target.y; });
+
+            node.attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; });
+        });
+    }
+    graph(data)
+</script>
+
+{%endfor%}
+{%endif%}
+
+<script>
+    function reloadCss() {
+        var links = document.getElementsByTagName("link");
+        for (var cl in links) {
+            var link = links[cl];
+            if (link.rel === "stylesheet")
+                link.href += "";
+        }
+    }
+</script>
