@@ -13,10 +13,10 @@ In many domains, especially in the social sciences, analysing and transcribing i
 # Setup
 
 1. Install all requirements (ideally in a virtual env)
-    pip install -r requirements.txt
+    `pip install -r requirements.txt`
 2. Create a new file .env and add your Assembly AI and OpenAI API keys to it
-    ASSEMBLY_API_KEY=...
-    OPENAI_API_KEY=...
+    `ASSEMBLY_API_KEY=...`
+    `OPENAI_API_KEY=...`
 3. Run server.py
 
 Now you can begin using the dashboard! Just provide a full YouTube link and it should start working.
