@@ -125,6 +125,7 @@
 
     <script>
         var conversation = {% if text is defined %}{% for t in text %} "{{ t }}" + {% endfor %}{% endif %} "";
+
         function submitButton(value){
             url = "/sendOpenAIRequest";
             axios.post(url, data = {"question": value, "conversation": conversation}).then(
