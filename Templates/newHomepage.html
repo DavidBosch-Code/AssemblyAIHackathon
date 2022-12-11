@@ -32,6 +32,7 @@
         <div>
 
         </div>
+
         <div class="graph_area_divs">
             <section class="graph_section">
                 <div id="my_graph_A"></div>
@@ -42,7 +43,7 @@
             <section class="summary">
                 <div class="summary_div_box">
                     <h5 class="summary_title">Interview Summary</h5>
-                    <div class="summary_text">
+                    <div id="summarytext" class="summary_text">
                         {% if summary is defined %}
                         {{ summary }}
                         {% endif %}
@@ -55,8 +56,26 @@
         <div class="Key-Insights">
             <div class="Key-Insights_div_box">
                 <div class="Key-Insights-inner-div">
+                    <h5 class="Key-Insights-title">Update Transcript</h5>
+                    <div id="conclusionstext" class="Key-Insights-text">
+                        {% if text is defined %}
+                        <form id="sendAxiosRequest">
+                            <textarea id="sendAxiosTranscriptText" name="sendAxiosTranscript" rows="25" cols="100">
+                        {% for t in text %}{{ t }}
+                        {% endfor %}
+                            </textarea>
+                            <button onclick="submitTranscript(document.getElementById('sendAxiosTranscriptText').value)" type="button">Submit</button>
+                        </form>
+                        {% endif %}                
+                    </div>
+                </div>
+            </div>
+
+        <div class="Key-Insights">
+            <div class="Key-Insights_div_box">
+                <div class="Key-Insights-inner-div">
                     <h5 class="Key-Insights-title">Key Insights</h5>
-                    <div class="Key-Insights-text">
+                    <div id="conclusionstext" class="Key-Insights-text">
                         {% if conclusions is defined %}
                         {{ conclusions }}
                         {% endif %}
@@ -67,7 +86,7 @@
         <div class="AskQuestions">
             <div class="Key-Insights_div_box">
                 <div class="Key-Insights-inner-div">
-                    <h5 class="Key-Insights-title">Ask Questions</h5>
+                    <h5 class="Key-Insights-title">Ask OpenAI a Question</h5>
                     <div class="ask-questions">
                         <form id="sendAxiosRequest">
                             <textarea id="sendAxiosRequestValue" class="sendAxiosRequestValue" name="sendAxios" rows="4" cols="200"></textarea>
@@ -82,7 +101,7 @@
 
 
 <script>
-    const conversation = "{% if text is defined %}{% for t in text %} '{{ t }}' + {% endfor %}{% endif %}";
+    var conversation = {% if text is defined %}{% for t in text %} "{{ t }}" + {% endfor %}{% endif %} "";
 
     function submitButton(value){
         url = "http://localhost:5000/sendOpenAIRequest"
@@ -94,6 +113,19 @@
             console.log(error);
         });
     }
+
+    function submitTranscript(transcript) {
+            url = "/sendUpdatedTranscript";
+            axios.post(url, data = {"transcript": transcript}).then(
+                function(response){
+                    document.getElementById("summarytext").innerHTML = response.data["summary"];
+                    document.getElementById("conclusionstext").innerHTML = response.data["conclusions"];
+                    conversation = document.getElementById('sendAxiosTranscriptText').value;
+                }
+            ).catch(function(error) {
+                console.log(error);
+            });
+        }
 </script>
     {%if graph_data is defined%}
     {%for speaker, graph in graph_data.items()%}
