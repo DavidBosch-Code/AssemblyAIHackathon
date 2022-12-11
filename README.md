@@ -24,6 +24,6 @@ Now you can begin using the dashboard! Just provide a full YouTube link and it s
 
 # Notes
 
-- Downloading from YouTube can be quite slow, especially for longer videos. You can see the progress in the command prompt/terminal.
+- Downloading from YouTube can be quite slow, especially for longer videos. You can see the progress in the command prompt/terminal. We recommend trying it out with a short video initially.
 - We save the video mp3s & transcript results, so running the dashboard on a previously used link should be faster (it does re-run OpenAI requests)
 - We assume each video has exactly two speakers. More or less may lead to unexpected behavior
