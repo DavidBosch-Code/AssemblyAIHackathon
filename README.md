@@ -2,7 +2,7 @@
 
 This project provides a dashboard to analyze interviews. Given a YouTube video link with two speakers, it will provide a transcription (using AssemblyAI) and graphs of the key phrases that each speaker mentioned. We also provide a summary and key takeaways using OpenAI. There is an option to update the transcript, in case there are any issues, that will update the summary and takeaways. The user also has the option to ask further questions about the interview, which are answered through OpenAI.
 
-The graph links are generated based on the cosine similarity of the phrase embeddings (using a simple sentence transformers model).
+The graph links are generated based on the cosine similarity of the phrase embeddings (using the `all-MiniLM-L6-v2` sentence transformers model).
 
 ![image](https://user-images.githubusercontent.com/49696908/206913116-bc416ddc-37bd-4aa2-bbe9-82ad2d2b4050.png)
 
