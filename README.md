@@ -9,7 +9,7 @@ The graph links are generated based on the cosine similarity of the phrase embed
 # Motivation
 
 
- Interviews are a vital component of collecting data, both in industry, such as in UXR, as well as in the social sciences. Analysing and transcribing interviews is a time consuming and costly task that often requires mutliple tools (e.g., separate transcription & analysis software, with much manual effort). This dashboard provides a very simple MVP/POC that could help in such cases. The interactive QA and summarization with large language models can aid analysis, especially for longer interviews.
+ Interviews are a vital component of collecting data, both in industry, such as in UXR, and in academia, e.g., in the social sciences. Analysing and transcribing interviews is a time consuming and costly task that often requires mutliple tools (e.g., separate transcription & analysis software, with much manual effort). This dashboard provides a very simple MVP/POC that could help in such cases. The interactive QA and summarization with large language models can aid analysis, especially for longer interviews.
 
 # Setup
 
