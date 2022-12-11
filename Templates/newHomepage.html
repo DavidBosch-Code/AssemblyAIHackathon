@@ -30,7 +30,14 @@
             </form>
         </section>
         <div>
-
+            {% if mp3_loc is defined %}
+            <figure>
+                <figcaption>Listen to audio:</figcaption>
+                <audio
+                    src="/return_mp3?{{ mp3_loc }}" controls loop>
+                </audio>
+            </figure>
+            {% endif %}
         </div>
 
         <div class="graph_area_divs">

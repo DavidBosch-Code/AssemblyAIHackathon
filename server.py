@@ -1,13 +1,13 @@
-from flask import Flask, request, render_template, flash, jsonify
+from flask import Flask, request, render_template, flash, jsonify, abort, send_file
 from config import ApplicationConfig
-from tempfile import TemporaryDirectory
-from typing import Mapping, Any
+from typing import Mapping, Any, Tuple
 import uuid
 import json
 import csv
 import os
 from sentence_transformers import SentenceTransformer, util
 from config import CSV_CACHE, CACHE_FOLDER
+import urllib
 
 
 import api_get
@@ -28,23 +28,20 @@ def get_yt_transcription(video_url: str):
 
     curdir_fn = generate_local_fn()
 
-    with TemporaryDirectory() as tmpdirname:
-        print('created temporary directory', tmpdirname)
+    fn = os.path.join(CACHE_FOLDER, curdir_fn)
 
-        fn = os.path.join(tmpdirname, curdir_fn)
+    api_get.download_yt_as_mp3(fn, video_url)
 
-        api_get.download_yt_as_mp3(fn, video_url)
+    upload_url = api_get.upload_file_to_assemblyai(fn)
 
-        upload_url = api_get.upload_file_to_assemblyai(fn)
+    transcript_id = api_get.submit_transcription_file(upload_url)
 
-        transcript_id = api_get.submit_transcription_file(upload_url)
+    transcript = api_get.await_transcription(transcript_id)
 
-        transcript = api_get.await_transcription(transcript_id)
-
-    return transcript
+    return transcript, fn
 
 
-def check_local_cache(link: str) -> Mapping[str, Any] | None:
+def check_local_cache(link: str) -> Tuple[Mapping[str, Any], str] | Tuple[None, None]:
     fn = None
     with open(CSV_CACHE, 'r') as f:
         csvreader = csv.reader(f)
@@ -56,17 +53,18 @@ def check_local_cache(link: str) -> Mapping[str, Any] | None:
 
             if row[0] == link:
                 fn = row[1]
+                mp3_loc = row[2]
                 continue
     if not fn:
-        return None
+        return None, None
 
     with open(fn, 'r') as f:
         transcript = json.load(f)
 
-    return transcript
+    return transcript, mp3_loc
 
 
-def update_local_cache(link: str, transcript: Mapping[str, Any]):
+def update_local_cache(link: str, transcript: Mapping[str, Any], mp3_loc: str):
     local_fn = generate_local_fn(type='json')
 
     fn = os.path.join(CACHE_FOLDER, local_fn)
@@ -76,7 +74,7 @@ def update_local_cache(link: str, transcript: Mapping[str, Any]):
 
     with open(CSV_CACHE, 'a') as f:
         csvwriter = csv.writer(f)
-        csvwriter.writerow([link, fn])
+        csvwriter.writerow([link, fn, mp3_loc])
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -88,11 +86,11 @@ def mainpage():
             flash("Link cannot be empty")
             return
 
-        transcript = check_local_cache(link)
+        transcript, mp3_loc = check_local_cache(link)
         transcript_in_cache = True if transcript else False
 
         if not transcript_in_cache:
-            transcript = get_yt_transcription(link)
+            transcript, mp3_loc = get_yt_transcription(link)
         else:
             print('loaded from cache!')
 
@@ -107,11 +105,13 @@ def mainpage():
         )
 
         if not transcript_in_cache:
-            update_local_cache(link, transcript)
+            update_local_cache(link, transcript, mp3_loc)
         
         # Would make sense to cache this in the future as well
         transcript_summary = api_get.openai_summary(conversation)
         transcript_conclusions = api_get.openai_conclusions(conversation)
+
+        link_encoded = urllib.parse.urlencode({"link": link})
 
         return render_template(
             "newHomepage.html",
@@ -121,9 +121,22 @@ def mainpage():
             graph_data=graph_data,
             summary=transcript_summary,
             conclusions=transcript_conclusions,
+            mp3_loc=link_encoded,
         )
     else:
         return render_template('newHomepage.html')
+
+
+@app.route('/return_mp3')
+def return_mp3():
+    link = request.args.get("link")
+    _, mp3_loc = check_local_cache(link)
+    if not mp3_loc:
+        abort(404)
+    try:
+        return send_file(mp3_loc)
+    except Exception as e:
+        return str(e)
 
 
 @app.route("/sendOpenAIRequest", methods = ["POST"])
