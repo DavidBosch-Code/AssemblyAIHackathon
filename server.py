@@ -114,7 +114,7 @@ def mainpage():
         transcript_conclusions = api_get.openai_conclusions(conversation)
 
         return render_template(
-            "homepage.html",
+            "newHomepage.html",
             link=link,
             text=conversation,
             auto_highlights=auto_highlights,
@@ -123,7 +123,7 @@ def mainpage():
             conclusions=transcript_conclusions,
         )
     else:
-        return render_template('homepage.html')
+        return render_template('newHomepage.html')
 
 
 @app.route("/sendOpenAIRequest", methods = ["POST"])

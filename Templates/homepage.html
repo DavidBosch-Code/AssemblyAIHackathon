@@ -120,7 +120,7 @@
     {%endif%}
 
     <script>
-        const conversation = {% if text is defined %}{% for t in text %} "{{ t }}" + {% endfor %}{% endif %} "";
+        const conversation = "{% if text is defined %}{% for t in text %} '{{ t }}' + {% endfor %}{% endif %}";
 
         function submitButton(value){
             url = "http://localhost:5000/sendOpenAIRequest"
